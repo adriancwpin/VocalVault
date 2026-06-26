@@ -20,4 +20,10 @@ async function getAllExpenses(){
   return result.rows;
 }
 
-export { createExpense, getAllExpenses };
+//delete expenses from the database 
+//to find a way to delete, we have to go through the id
+async function deleteExpenses(id){
+  const result = await pool.query('DELETE FROM expenses WHERE id = $1 RETURNING *', [id]);
+  return result.rows[0];
+}
+export { createExpense, getAllExpenses, deleteExpenses };
