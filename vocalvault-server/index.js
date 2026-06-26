@@ -7,6 +7,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors'; //allows the frontend to talk to the backend without browser blocking it
 import expensesRouter from './src/routes/expense.route.js';
+import categoryRouter from './src/routes/category.route.js';
 
 const app = express(); //creates server application
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(cors())
 app.use(express.json());
 
 app.use('/api/expenses', expensesRouter);
+app.use('/api/categories', categoriesRouter);
 
 app.get('/api/health', (req,res) => {
     res.json({status: 'ok'});
