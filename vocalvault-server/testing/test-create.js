@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { createExpense, getAllExpenses, deleteExpenses, getExpenseById } from '../src/models/expense.model.js';
+import { createExpense, getAllExpenses, deleteExpense, getExpenseById } from '../src/models/expense.model.js';
 
 const result = await createExpense({
   amount: 15.00,
@@ -13,7 +13,7 @@ const expenses = await getAllExpenses();
 
 const id = await getExpenseById(3);
 
-const deleted = await deleteExpenses(2);
+const deleted = await deleteExpense(2);
 
 
 

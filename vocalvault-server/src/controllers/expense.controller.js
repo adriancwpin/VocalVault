@@ -1,6 +1,6 @@
 //call get all expense from model and response the request info 
 
-import { getAllExpenses, createExpense } from "../models/expense.model.js";
+import { getAllExpenses, createExpense, deleteExpense, getExpenseById } from "../models/expense.model.js";
 
 async function createExpenseHandler(req,res){
     try{
@@ -43,4 +43,49 @@ async function getAllExpensesHandler(req, res){
     }
 }
 
-export { getAllExpensesHandler, createExpenseHandler };
+async function deleteExpenseHandler(req, res){
+    try{
+        const{id} = req.params;
+        const dltExpense = await deleteExpense(id);
+        if(!dltExpense){
+            return res.status(404).json({
+                success: false,
+                message: "Expense Not Found."
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            data: dltExpense
+        });
+    }catch (err){
+        console.error("Failed to delete expense: " + err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error. Couldn't delete expense."
+        });
+    }
+}
+
+async function getExpenseByIdHandler (req, res){
+    try{
+        const{id} = req.params;
+        const byId = await getExpenseById(id);
+        if(!byId){
+            return res.status(404).json({
+                success: false,
+                message: 'Expense Id not found.'
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            data: byId
+        });
+    }catch(err){
+        console.error("Fail to find expense by ID: " + err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+export { getAllExpensesHandler, createExpenseHandler, deleteExpenseHandler, getExpenseByIdHandler };
