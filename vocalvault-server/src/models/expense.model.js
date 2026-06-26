@@ -5,6 +5,7 @@
 
 import pool from '../db/connection.js';
 
+//send data to the database
 async function createExpense({ amount, categoryId, description, rawText, source }) {
   const result = await pool.query(
     'INSERT INTO expenses (amount, category_id, description, raw_text, source) VALUES ($1, $2, $3, $4, $5) RETURNING *',
@@ -13,4 +14,10 @@ async function createExpense({ amount, categoryId, description, rawText, source 
   return result.rows[0];
 }
 
-export { createExpense };
+//fetch all expenses from the database
+async function getAllExpenses(){
+  const result = await pool.query('SELECT * FROM expenses ORDER BY created_at DESC');
+  return result.rows;
+}
+
+export { createExpense, getAllExpenses };

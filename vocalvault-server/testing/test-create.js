@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { createExpense } from '../src/models/expense.model.js';
+import { createExpense, getAllExpenses } from '../src/models/expense.model.js';
 
 const result = await createExpense({
   amount: 15.00,
@@ -9,4 +9,7 @@ const result = await createExpense({
   source: 'manual',
 });
 
+const expenses = await getAllExpenses();
+
 console.log('Created:', result);
+console.log('All expenses: ', expenses);
