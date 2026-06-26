@@ -20,10 +20,16 @@ async function getAllExpenses(){
   return result.rows;
 }
 
+//fetch only one expense from the database
+async function getExpenseById(id){
+  const result = await pool.query('SELECT * FROM expenses WHERE id = $1', [id]);
+  return result.rows[0];
+}
+
 //delete expenses from the database 
 //to find a way to delete, we have to go through the id
 async function deleteExpenses(id){
   const result = await pool.query('DELETE FROM expenses WHERE id = $1 RETURNING *', [id]);
   return result.rows[0];
 }
-export { createExpense, getAllExpenses, deleteExpenses };
+export { createExpense, getAllExpenses, getExpenseById, deleteExpenses };
