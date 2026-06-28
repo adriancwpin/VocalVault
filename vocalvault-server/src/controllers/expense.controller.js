@@ -68,8 +68,8 @@ async function deleteExpenseHandler(req, res){
 
 async function getExpenseByIdHandler (req, res){
     try{
-        const{id} = req.params;
-        const byId = await getExpenseById(id);
+        const{id} = req.params; //extract the id from the URL
+        const byId = await getExpenseById(id); //use that id to query the database
         if(!byId){
             return res.status(404).json({
                 success: false,
