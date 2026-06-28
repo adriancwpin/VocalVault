@@ -38,3 +38,8 @@ function parseLeftover(text){
 }
 
 console.log(parseLeftover("spent 15 pounds on coffee"));
+
+//ToDo: 1. finish filler word stripping and whitespace cleanup (edge cases)
+//ToDo: 2. Category matching 
+//ToDo: 3.combine everything into one parseExpense(transcript) function 
+//ToDo: 4. wire to API endpoint and curl it
