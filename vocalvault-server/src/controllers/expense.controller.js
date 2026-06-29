@@ -7,6 +7,13 @@ async function createExpenseHandler(req,res){
     try{
         const {amount,categoryId, description, rawText, source} = req.body;
 
+        if(!amount || amount <= 0){
+            return res.status(400).json({
+                success: false,
+                message: "A valid amount must be greater than 0"
+            });
+        }
+        
         const newExpense = await createExpense({amount, categoryId, description, rawText, source});
         
         //201 - created successfully
