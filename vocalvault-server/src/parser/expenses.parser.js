@@ -64,23 +64,21 @@ function categoryMatching(leftoverText, categories){
 async function parseExpense(text){
     const normalized = wordToNumbers(text); 
     const amount = parseAmount(normalized);
-    const descriptions = parseLeftover(normalized);
+    const description = parseLeftover(normalized);
     //category matching 
     const categories = await getAllCategories();
-    const matchedCategory = categoryMatching(descriptions, categories);
+    const matchedCategory = categoryMatching(description, categories);
     const categoryId = matchedCategory ? matchedCategory.id : null;
     const categoryName = matchedCategory ? matchedCategory.name : null;
 
     return {
         amount, 
-        descriptions,
+        description,
         categoryId,
         categoryName,
         rawText: text
     };
 }
 
-const result = await parseExpense("spent fifteen pounds on coffee");
-console.log(result);
-//ToDo: 4. wire to API endpoint and curl it
+export { parseExpense };
 

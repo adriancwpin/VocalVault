@@ -1,6 +1,7 @@
 //call get all expense from model and response the request info 
 
 import { getAllExpenses, createExpense, deleteExpense, getExpenseById } from "../models/expense.model.js";
+import { parseExpense } from "../parser/expenses.parser.js"
 
 async function createExpenseHandler(req,res){
     try{
@@ -88,4 +89,21 @@ async function getExpenseByIdHandler (req, res){
         });
     }
 }
-export { getAllExpensesHandler, createExpenseHandler, deleteExpenseHandler, getExpenseByIdHandler };
+
+async function parseExpensesHandler(req, res){
+    try{
+        const { text } = req.body;
+        const parsed = await parseExpense(text);
+        return res.status(200).json({
+            success : true,
+            data: parsed
+        });
+    }catch(err){
+        console.error("Error parsing expense: ", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error. Could not parse expense."
+        });
+    }
+}
+export { getAllExpensesHandler, createExpenseHandler, deleteExpenseHandler, getExpenseByIdHandler, parseExpensesHandler };
