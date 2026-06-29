@@ -1,5 +1,7 @@
+import 'dotenv/config'; //because there is access to our category db
 import wordToNumbers from 'word-to-numbers';
-
+import { getAllCategories } from '../models/category.model.js';
+ 
 const DECIMAL_PATTERN = /(\d+)\s*point\s*(\d{1,2})\s*(pounds?|quid|£)?/;
 const POUNDS_PATTERN = /(\d+)\s*pounds?\s*(\d{1,2})/;
 const WHOLE_NUMBER_PATTERN = /(\d+)\s*(pounds?|quid|£)/;
@@ -8,7 +10,7 @@ function parseAmount(text) {
     const decimalMatch = text.match(DECIMAL_PATTERN);
     if (decimalMatch) {
         return parseFloat(`${decimalMatch[1]}.${decimalMatch[2]}`);
-    }
+    }   
     const poundsMatch = text.match(POUNDS_PATTERN);
     if (poundsMatch) {
         return parseFloat(`${poundsMatch[1]}.${poundsMatch[2]}`);
@@ -42,17 +44,43 @@ function parseLeftover(text) {
     return leftover;
 }
 
-function parseExpense(text){
+function categoryMatching(leftoverText, categories){
+    //split the leftover text into individual words
+    const text = leftoverText.toLowerCase().split(/\s+/);
+    //loop through the categories 
+    for (const category of categories){
+        for(const word of text){
+            if(category.keywords.includes(word)){
+                return category;
+            }
+        }
+    }
+    return null; 
+    //see which word fall into which category
+    //return the matching category (else null)
+    //
+}
+
+async function parseExpense(text){
     const normalized = wordToNumbers(text); 
     const amount = parseAmount(normalized);
     const descriptions = parseLeftover(normalized);
-    
-    return {amount, descriptions};
+    //category matching 
+    const categories = await getAllCategories();
+    const matchedCategory = categoryMatching(descriptions, categories);
+    const categoryId = matchedCategory ? matchedCategory.id : null;
+    const categoryName = matchedCategory ? matchedCategory.name : null;
+
+    return {
+        amount, 
+        descriptions,
+        categoryId,
+        categoryName,
+        rawText: text
+    };
 }
 
-//test
-console.log(parseExpense("spent fifteen pounds on coffee"));
-//ToDo: 2. Category matching 
-//ToDo: 3.combine everything into one parseExpense(transcript) function 
+const result = await parseExpense("spent fifteen pounds on coffee");
+console.log(result);
 //ToDo: 4. wire to API endpoint and curl it
 
