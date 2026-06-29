@@ -1,6 +1,6 @@
 //call get all expense from model and response the request info 
 
-import { getAllExpenses, createExpense, deleteExpense, getExpenseById } from "../models/expense.model.js";
+import { getAllExpenses, createExpense, deleteExpense, getExpenseById, updateExpense } from "../models/expense.model.js";
 import { parseExpense } from "../parser/expenses.parser.js"
 
 async function createExpenseHandler(req,res){
@@ -13,7 +13,7 @@ async function createExpenseHandler(req,res){
                 message: "A valid amount must be greater than 0"
             });
         }
-        
+
         const newExpense = await createExpense({amount, categoryId, description, rawText, source});
         
         //201 - created successfully
@@ -74,6 +74,7 @@ async function deleteExpenseHandler(req, res){
     }
 }
 
+
 async function getExpenseByIdHandler (req, res){
     try{
         const{id} = req.params; //extract the id from the URL
@@ -97,6 +98,40 @@ async function getExpenseByIdHandler (req, res){
     }
 }
 
+async function updateExpenseHandler(req,res){
+    try{
+        const { id } = req.params;
+        const { amount, categoryId, description, createdAt } = req.body;
+
+        if(amount !== undefined && amount <= 0){
+            return res.status(404).json({
+                success: false,
+                message: "Amount must be greater than 0"
+            });
+        }
+
+        const updated = await updateExpense(id, {amount,categoryId,description,createdAt});
+
+        if(!updated){
+            return res.status(400).json({
+                success: false,
+                message: "Expense not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: updated
+        });
+    }catch(err){
+        console.error("Error updating expense: ", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error. Could not update expense."
+        });
+    }
+}
+
 async function parseExpensesHandler(req, res){
     try{
         const { text } = req.body;
@@ -113,4 +148,4 @@ async function parseExpensesHandler(req, res){
         });
     }
 }
-export { getAllExpensesHandler, createExpenseHandler, deleteExpenseHandler, getExpenseByIdHandler, parseExpensesHandler };
+export { getAllExpensesHandler, createExpenseHandler, deleteExpenseHandler, getExpenseByIdHandler, updateExpenseHandler, parseExpensesHandler };

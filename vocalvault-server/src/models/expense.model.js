@@ -2,8 +2,9 @@
 // Handles all database queries related to expenses.
 // Takes in plain JS data, runs an SQL query using pool.query,
 // and returns the result back to whoever called it.
-
+import 'dotenv/config'; 
 import pool from '../db/connection.js';
+import { config } from 'dotenv';
 
 //send data to the database
 async function createExpense({ amount, categoryId, description, rawText, source }) {
@@ -32,4 +33,22 @@ async function deleteExpense(id){
   const result = await pool.query('DELETE FROM expenses WHERE id = $1 RETURNING *', [id]);
   return result.rows[0];
 }
-export { createExpense, getAllExpenses, getExpenseById, deleteExpense };
+
+//update expense
+async function updateExpense(id, { amount, categoryId, description, createdAt }){
+  const result = await pool.query(
+    'UPDATE expenses SET amount = $1, category_id = $2, description = $3, created_at = $4 WHERE id = $5 RETURNING *',
+    [amount,categoryId, description, createdAt, id]
+  );
+  return result.rows[0];
+}
+
+const updated = await updateExpense(5, {
+  amount: 20.00,
+  categoryId: 3,
+  description: "coffee and cake",
+  createdAt: "2026-06-25T10:00:00Z"
+});
+console.log('Updated:', updated);
+
+export { createExpense, getAllExpenses, getExpenseById, deleteExpense, updateExpense };
