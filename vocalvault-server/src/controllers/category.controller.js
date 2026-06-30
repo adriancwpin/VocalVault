@@ -1,4 +1,4 @@
-import { getAllCategories, getCategoryById, createCategory, deleteCategory } from "../models/category.model.js";
+import { getAllCategories, getCategoryById, createCategory, deleteCategory, updateCategory } from "../models/category.model.js";
 
 async function allCategoriesHandler(req, res){
     try{
@@ -82,4 +82,37 @@ async function deleteCategoryHandler(req, res){
     }
 }
 
-export { allCategoriesHandler, categoryByIdHandler, createCategoryHandler, deleteCategoryHandler};
+async function updateCategoryHandler(req, res){
+    try{
+        const {id} = req.params;
+        const {name, keywords} = req.body;
+
+        if (name !== undefined && name.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: "Category name cannot be empty."
+            });
+        }
+        const updated = await updateCategory(id, {name,keywords});
+
+        if(!updated){
+            return res.status(404).json({
+                success: false,
+                message: "Category id is not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: updated
+        });
+    }catch(err){
+        console.error("Error updating category: ", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error.Could not update category"
+        });
+    }
+}
+
+export { allCategoriesHandler, categoryByIdHandler, createCategoryHandler, deleteCategoryHandler, updateCategoryHandler};
