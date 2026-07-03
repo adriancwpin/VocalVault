@@ -43,12 +43,4 @@ async function updateExpense(id, { amount, categoryId, description, createdAt })
   return result.rows[0];
 }
 
-const updated = await updateExpense(5, {
-  amount: 20.00,
-  categoryId: 3,
-  description: "coffee and cake",
-  createdAt: "2026-06-25T10:00:00Z"
-});
-console.log('Updated:', updated);
-
 export { createExpense, getAllExpenses, getExpenseById, deleteExpense, updateExpense };
