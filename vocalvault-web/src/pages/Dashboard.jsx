@@ -1,20 +1,47 @@
 import "./Dashboard.css";
+import { useState, useEffect } from "react";
+import { getExpenses, getCategories } from "../api/client.js";
+
 
 function Dashboard() {
-  const totalSpent = 123;
-  const monthlyBudget = 1000;
-  const categorySpending = [ 
-  { id: 1, name: "Food/Drink", amount: 76 },
-  { id: 2, name: "Bills", amount: 31 },
-  { id: 3, name: "Transport", amount: 16 },
-];
-  const recentExpenses = [
-    { id: 1, description: "Coffee", amount: 3.50, category: "Food/Drink" },
-    { id: 2, description: "Bus fare", amount: 2.80, category: "Transport" },
-    { id: 3, description: "Netflix", amount: 12.99, category: "Entertainment" },
-  ];
-  const percentUsed = Math.round((totalSpent/monthlyBudget) * 100);
-  const maxAmount = Math.max(...categorySpending.map((c) => c.amount));
+  const [expenses, setExpenses] = useState([]);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    async function loadData(){
+      try{
+        const result = await getExpenses();
+        const result_categories = await getCategories();
+        setExpenses(result.data);
+        setCategories(result_categories.data);
+      }catch(error){
+        console.error(error);
+      }
+    }
+    loadData();
+  }, []);
+  
+  const monthlyBudget = 1000;   // stays hardcoded until Settings is wired to the backend
+  const totalSpent = expenses.reduce(
+    (sum, expense) => sum + Number(expense.amount),
+    0
+  );
+  const recentExpenses = expenses.slice(0, 3);
+  const percentUsed = Math.round((totalSpent / monthlyBudget) * 100);
+  const spendingByCategory = {};
+  expenses.forEach((expense) => {
+    if (expense.category_id) {
+      spendingByCategory[expense.category_id] =
+        (spendingByCategory[expense.category_id] || 0) + Number(expense.amount);
+    }
+  });
+  const categoryNames ={};
+  categories.forEach((c) => {categoryNames[c.id] = c.name;});
+  const categorySpending = Object.entries(spendingByCategory).map(([id, amount]) => ({
+    id,
+    name: categoryNames[id] || "Unknown",
+    amount,
+  }));
+  const maxAmount = Math.max(...categorySpending.map((c) => c.amount), 1);
 
 
   return (
@@ -43,7 +70,7 @@ function Dashboard() {
         {/* RIGHT: Ledger */}
         <div className="ledger-column">
           <div className="budget-summary card">
-            <p className="budget-figure">£{totalSpent}</p>
+            <p className="budget-figure">£{totalSpent.toFixed(2)}</p>
             <p className="budget-label">spent of £{monthlyBudget} this month</p>
             <span className="budget-pill">{percentUsed}% used</span>
           </div>
@@ -72,9 +99,9 @@ function Dashboard() {
                   <tr key={expense.id} className="expense-row">
                     <td className="expense-name">
                       {expense.description}
-                      <span className="expense-category"> • {expense.category}</span>
+                      <span className="expense-category"> • {categoryNames[expense.category_id] || "Uncategorized"}</span>
                     </td>
-                    <td className="expense-amount">£{expense.amount.toFixed(2)}</td>
+                    <td className="expense-amount">£{Number(expense.amount).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

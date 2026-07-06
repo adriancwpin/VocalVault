@@ -37,10 +37,15 @@ async function deleteExpense(id){
 //update expense
 async function updateExpense(id, { amount, categoryId, description, createdAt }){
   const result = await pool.query(
-    'UPDATE expenses SET amount = $1, category_id = $2, description = $3, created_at = $4 WHERE id = $5 RETURNING *',
-    [amount,categoryId, description, createdAt, id]
+    `UPDATE expenses
+     SET amount = COALESCE($1, amount),
+         category_id = COALESCE($2, category_id),
+         description = COALESCE($3, description),
+         created_at = COALESCE($4, created_at)
+     WHERE id = $5
+     RETURNING *`,
+    [amount, categoryId, description, createdAt, id]
   );
   return result.rows[0];
 }
-
 export { createExpense, getAllExpenses, getExpenseById, deleteExpense, updateExpense };

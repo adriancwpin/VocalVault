@@ -5,7 +5,7 @@ import { parseExpense } from "../parser/expenses.parser.js"
 
 async function createExpenseHandler(req,res){
     try{
-        const {amount,categoryId, description, rawText, source} = req.body;
+        const {amount,category_id, description, rawText, source} = req.body;
 
         if(!amount || amount <= 0){
             return res.status(400).json({
@@ -14,7 +14,7 @@ async function createExpenseHandler(req,res){
             });
         }
 
-        const newExpense = await createExpense({amount, categoryId, description, rawText, source});
+        const newExpense = await createExpense({amount, categoryId: category_id, description, rawText, source});
         
         //201 - created successfully
         return res.status(201).json({
@@ -101,19 +101,19 @@ async function getExpenseByIdHandler (req, res){
 async function updateExpenseHandler(req,res){
     try{
         const { id } = req.params;
-        const { amount, categoryId, description, createdAt } = req.body;
+        const { amount, category_id, description, created_at } = req.body;
 
         if(amount !== undefined && amount <= 0){
-            return res.status(404).json({
+            return res.status(400).json({
                 success: false,
                 message: "Amount must be greater than 0"
             });
         }
 
-        const updated = await updateExpense(id, {amount,categoryId,description,createdAt});
+        const updated = await updateExpense(id, {amount,categoryId: category_id,description,createdAt: created_at});
 
         if(!updated){
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
                 message: "Expense not found"
             });
