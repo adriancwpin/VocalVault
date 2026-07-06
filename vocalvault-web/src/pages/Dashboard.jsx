@@ -3,12 +3,18 @@ import "./Dashboard.css";
 function Dashboard() {
   const totalSpent = 123;
   const monthlyBudget = 1000;
+  const categorySpending = [ 
+  { id: 1, name: "Food/Drink", amount: 76 },
+  { id: 2, name: "Bills", amount: 31 },
+  { id: 3, name: "Transport", amount: 16 },
+];
   const recentExpenses = [
     { id: 1, description: "Coffee", amount: 3.50, category: "Food/Drink" },
     { id: 2, description: "Bus fare", amount: 2.80, category: "Transport" },
     { id: 3, description: "Netflix", amount: 12.99, category: "Entertainment" },
   ];
   const percentUsed = Math.round((totalSpent/monthlyBudget) * 100);
+  const maxAmount = Math.max(...categorySpending.map((c) => c.amount));
 
 
   return (
@@ -41,7 +47,23 @@ function Dashboard() {
             <p className="budget-label">spent of £{monthlyBudget} this month</p>
             <span className="budget-pill">{percentUsed}% used</span>
           </div>
-
+          <div className="category-spending card">
+            <h2 className="ledger-title">Spending by Category</h2>
+            <div className="category-table">
+              {categorySpending.map((category) => (
+                <div key={category.id} className="category-row">
+                  <span className="category-name">{category.name}</span>
+                  <div className="bar-track">
+                    <div
+                      className="bar-fill"
+                      style={{ width: `${(category.amount / maxAmount) * 100}%` }}
+                    ></div>
+                  </div>
+                  <span className="category-amount">£{category.amount}</span>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="expense-ledger card">
             <h2 className="ledger-title">Recent Expenses</h2>
             <table className="expense-table">

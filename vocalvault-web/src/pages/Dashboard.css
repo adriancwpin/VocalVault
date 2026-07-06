@@ -144,6 +144,37 @@
   white-space: nowrap;
 }
 
+.category-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 50px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+}
+
+.category-name{
+    color: rgba(27, 36, 48, 0.75);
+}
+
+.bar-track{
+    background-color: rgba(27, 36, 48, 0.08);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.bar-fill{
+    background-color: var(--color-accent);
+    height: 100%;
+    border-radius: 4px;
+}
+
+.category-amount{
+    text-align: right;
+    font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .dashboard-grid { grid-template-columns: 1fr; }
 }

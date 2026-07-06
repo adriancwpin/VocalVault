@@ -5,9 +5,9 @@
 }
 
 :root {
-  --color-bg: #FAF9F6;
+  --color-bg: #FAF9F6; /* background*/
   --color-text: #1B2430;
-  --color-accent: #3F6B4F;
+  --color-accent: #3F6B4F; /* actionable color*/
   --color-border: rgba(27, 36, 48, 0.12);
   --color-muted: rgba(27, 36, 48, 0.55);
 }
