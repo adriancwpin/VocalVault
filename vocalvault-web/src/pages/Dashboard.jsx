@@ -8,6 +8,8 @@ function Dashboard() {
     { id: 2, description: "Bus fare", amount: 2.80, category: "Transport" },
     { id: 3, description: "Netflix", amount: 12.99, category: "Entertainment" },
   ];
+  const percentUsed = Math.round((totalSpent/monthlyBudget) * 100);
+
 
   return (
     <div className="dashboard">
@@ -37,6 +39,7 @@ function Dashboard() {
           <div className="budget-summary card">
             <p className="budget-figure">£{totalSpent}</p>
             <p className="budget-label">spent of £{monthlyBudget} this month</p>
+            <span className="budget-pill">{percentUsed}% used</span>
           </div>
 
           <div className="expense-ledger card">

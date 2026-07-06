@@ -103,6 +103,16 @@
   color: var(--color-muted);
 }
 
+.budget-pill {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background-color: rgba(63, 107, 79, 0.1); /* forces fully rounded pill ends*/
+    color: var(--color-accent);
+}
+
 .ledger-title {
   margin: 0 0 16px;
   font-size: 15px;
@@ -127,7 +137,7 @@
 .expense-category { color: var(--color-muted); }
 
 .expense-amount {
-  padding: 14px 0 14px 24px;   /* left padding fixes the cramped Netflix row */
+  padding: 14px 0 14px 24px;   
   font-size: 15px;
   font-weight: 600;
   text-align: right;
