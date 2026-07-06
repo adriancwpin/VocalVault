@@ -14,9 +14,10 @@
 }
 
 .category-card-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 200px 1fr auto auto;
   align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
@@ -24,6 +25,66 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+}
+
+.category-count {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.keyword-input {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  width: 100%;
+}
+
+.keyword-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.add-keyword-button {
+  border: 1px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.add-keyword-button:hover {
+  background-color: rgba(63, 107, 79, 0.08);
+}
+
+.confirm-delete-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.confirm-delete-row button {
+  font-size: 13px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.confirm-yes {
+  color: rgba(160, 60, 50, 0.85);
+  font-weight: 600;
+}
+
+.confirm-cancel {
+  color: var(--color-muted);
 }
 
 .keyword-chips {
