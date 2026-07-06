@@ -1,0 +1,68 @@
+.setting-page {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 32px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.settings-card {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.setting-input {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.setting-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.save-button {
+  align-self: flex-start;
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-accent);
+  color: #FAF9F6;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.save-button:hover {
+  background-color: #35593F;
+}
+
+.page-subtitle {
+  margin: -16px 0 24px;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.setting-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import Dashboard from './pages/Dashboard.jsx';
 import Expense from './pages/Expense.jsx';
 import Category from './pages/Category.jsx';
+import Setting from './pages/Setting.jsx';
 
 
 function App() {
@@ -50,6 +51,16 @@ function App() {
           })}>
             Category
           </NavLink>
+
+          <NavLink to="/setting" style={({ isActive }) => ({
+            color: isActive ? 'a78bfa' : 'white',
+            textDecoration: 'none',
+            padding: '10px 12px',
+            borderRadius: '8px',
+            backgroundColor: isActive ? '#2d2d3f' : 'transparent',
+          })}>
+            Setting
+          </NavLink>
       </aside>
 
       {/*Main Content*/}
@@ -62,6 +73,7 @@ function App() {
           <Route path = "/" element={<Dashboard />} />
           <Route path = "/expenses" element={<Expense />} />
           <Route path = "/categories" element={<Category />} />
+          <Route path = "/setting" element={<Setting />} />
         </Routes>
       </main>
       </div>
