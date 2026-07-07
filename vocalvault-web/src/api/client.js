@@ -26,7 +26,7 @@ export async function deleteExpense(id){
     return response.json();
 }
 
-export async function editExpense(id){
+export async function editExpense(id, updates){
     const response = await fetch(`http://localhost:3000/api/expenses/${id}`,
         {method: "PUT",
          headers: {"Content-Type": "application/json"},
@@ -36,5 +36,31 @@ export async function editExpense(id){
     if(!response.ok){
         throw new Error(`Failed to update expense: ${response.status}`);
     }
+    return response.json();
+}
+
+export async function deleteCategory(id){
+    const response = await fetch (`http://localhost:3000/api/categories/${id}`,
+        {method: "DELETE",
+    });
+
+    if(!response.ok){
+        throw new Error(`Failed to delete category: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+export async function updateCategory(id, updates){
+    const response = await fetch (`http://localhost:3000/api/categories/${id}`,
+        {method: "PUT",
+         headers: {"Content-Type": "application/json"},
+         body: JSON.stringify(updates),
+    });
+
+    if(!response.ok){
+        throw new Error(`Failed to update category: ${response.status}`);
+    }
+
     return response.json();
 }

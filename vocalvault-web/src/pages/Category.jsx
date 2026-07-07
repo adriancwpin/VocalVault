@@ -1,46 +1,80 @@
 import "./Category.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getCategories, getExpenses, deleteCategory, updateCategory } from "../api/client.js";
 
 function Category() {
   const [newKeywords, setNewKeywords] = useState({});
-  const [categories, setCategories] = useState([
-    { id: 1, name: "Food/Drink", keywords: ["coffee", "lunch", "groceries", "restaurant"], count: 12},
-    { id: 2, name: "Transport", keywords: ["bus", "train", "taxi", "fuel"], count:5 },
-    { id: 3, name: "Shopping", keywords: ["clothes", "amazon", "shoes"], count: 4 },
-    { id: 4, name: "Bills", keywords: ["rent", "electricity", "water", "internet"], count: 4 },
-    { id: 5, name: "Entertainment", keywords: ["netflix", "cinema", "spotify", "games"], count: 4 },
-  ]);
-
+  const [categories, setCategories] = useState([]);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+  const [expenses, setExpenses] = useState([]);
 
-  function handleAddKeyword(categoryId){
+  useEffect(() => {
+    async function loadData(){
+        try{
+          const result = await getCategories();
+          const expenseResult = await getExpenses();
+          setCategories(result.data);
+          setExpenses(expenseResult.data);
+        } catch(error){
+          console.error(error);
+        }
+    }
+    loadData();
+  }, []);
+
+  async function confirmDelete(categoryId){
+    try{
+      await deleteCategory(categoryId);
+      setCategories(categories.filter((category) => category.id !== categoryId));
+      setConfirmingDeleteId(null);
+    } catch(error){
+      console.error(error);
+    }
+  }
+  async function handleAddKeyword(categoryId){
     const keywordToAdd =  newKeywords[categoryId];
     if(!keywordToAdd) return;
 
-    setCategories(
-      categories.map((category) =>
-        category.id === categoryId
-          ? {...category, keywords: [...category.keywords, keywordToAdd]}
-          : category
+    const category = categories.find((c) => c.id === categoryId);
+    const updatedKeywords = [...category.keywords, keywordToAdd];    
+    
+    try{
+      await updateCategory(categoryId, {keywords: updatedKeywords});
+      setCategories(
+        categories.map((c) => c.id === categoryId ? {...c, keywords: updatedKeywords} : c)
       )
-    );
-
-    setNewKeywords({...newKeywords, [categoryId]: ""}) /* clear inputs after adding*/
+      setNewKeywords({...newKeywords, [categoryId]: ""}); /* clear inputs after adding*/
+    } catch(error){
+      console.error(error);
+    }
   }
 
+  async function handleRemoveKeyword(categoryId, keywordToRemove) {
+    const category = categories.find((c) => c.id === categoryId);
+    const updatedKeywords = category.keywords.filter((k) => k !== keywordToRemove);
+
+    try {
+      await updateCategory(categoryId, { keywords: updatedKeywords });
+      setCategories(categories.map((c) => c.id === categoryId ? { ...c, keywords: updatedKeywords } : c));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
   function handleDeleteClick(categoryId){
     setConfirmingDeleteId(categoryId);
-  }
-
-  function confirmDelete(categoryId){ /*Set everything aside the one that is being deleted */
-    setCategories(categories.filter((category) => category.id !== categoryId));
-    setConfirmingDeleteId(null);
   }
 
   function cancelDelete(){
     setConfirmingDeleteId(null);
   }
 
+  const expenseCount = {};
+  expenses.forEach((expense) => {
+    if (expense.category_id){
+      expenseCount[expense.category_id] = (expenseCount[expense.category_id] || 0) + 1;
+    }
+  });
   return (
     <div className="category-page">
       <div className="page-header">
@@ -53,7 +87,7 @@ function Category() {
           <div key={category.id} className="card category-card">
             <div className="category-card-header">
               <h2 className="category-name">
-                {category.name} <span className="category-count">({category.count} expenses)</span></h2>
+                {category.name} <span className="category-count">({expenseCount[category.id] || 0} expenses)</span></h2>
               <input 
                 type="text"
                 className="keyword-input"
@@ -66,7 +100,7 @@ function Category() {
                 <button className="text-button">Edit</button>
                 {confirmingDeleteId === category.id ?(
                   <span className="confirm-delete-row">
-                    Delete this category and its {category.count} expenses?
+                    Delete this category and its {expenseCount[category.id] || 0} expenses?
                     <button className="confirm-yes" onClick={() => confirmDelete(category.id)}>Yes, delete</button>
                     <button className="confirm-cancel" onClick={cancelDelete}>Cancel</button>
                   </span>
@@ -79,8 +113,16 @@ function Category() {
             </div>
             <div className="keyword-chips">
               {category.keywords.map((keyword) => (
-                <span key={keyword} className="keyword-chip">{keyword}</span>
-              ))}
+              <span key={keyword} className="keyword-chip">
+                {keyword}
+                <button
+                  className="remove-keyword"
+                  onClick={() => handleRemoveKeyword(category.id, keyword)}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
             </div>
           </div>
         ))}
