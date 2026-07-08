@@ -1,11 +1,24 @@
 import "./Dashboard.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef} from "react";
 import { getExpenses, getCategories } from "../api/client.js";
-
 
 function Dashboard() {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [transcript, setTranscript] = useState("");
+
+  const recognition = new webkitSpeechRecognition();
+  recognition.continuous = false; 
+  recognition.interimResults = true;
+  recognition.lang = "en-GB";
+
+  recognition.onresult = (event) => {
+    const transcript = event[0][0].transcript;
+    /* add soemthing later on*/
+  }
+
+  recognition.start();
+
   useEffect(() => {
     async function loadData(){
       try{
@@ -19,7 +32,7 @@ function Dashboard() {
     }
     loadData();
   }, []);
-  
+
   const monthlyBudget = 1000;   // stays hardcoded until Settings is wired to the backend
   const totalSpent = expenses.reduce(
     (sum, expense) => sum + Number(expense.amount),
