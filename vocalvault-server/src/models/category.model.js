@@ -29,8 +29,13 @@ async function getCategoryById(id){
 }
 
 async function updateCategory(id, {name, keywords}){
-    const result = await pool.query('UPDATE categories SET name = $1 ,keywords = $2 WHERE id = $3 RETURNING * ',
-        [name, keywords,id]
+    const result = await pool.query(
+        `UPDATE categories
+         SET name = COALESCE($1, name),
+             keywords = COALESCE($2, keywords)
+         WHERE id = $3
+         RETURNING *`,
+        [name, keywords, id]
     );
 
     return result.rows[0];

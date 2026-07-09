@@ -1,32 +1,68 @@
 import "./Dashboard.css";
-import { useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import { getExpenses, getCategories } from "../api/client.js";
 
 function Dashboard() {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [transcript, setTranscript] = useState("");
-
-  const recognition = new webkitSpeechRecognition();
-  recognition.continuous = false; 
-  recognition.interimResults = true;
-  recognition.lang = "en-GB";
-
-  recognition.onresult = (event) => {
-    const transcript = event[0][0].transcript;
-    /* add soemthing later on*/
-  }
-
-  recognition.start();
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(true);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
-    async function loadData(){
-      try{
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-GB";
+
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        setTranscript(text);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error: ", event.error);
+        setIsRecording(false);
+      };
+
+      recognitionRef.current = recognition;
+    }else{
+      setIsSpeechSupported(false);
+    }
+  }, []);
+
+  function handleRecordClick() {
+    if(!isSpeechSupported){
+      alert("Speech recognition is not supported in this browser. Please try Chrome or Safari.");
+      return;
+    }
+
+    if (!recognitionRef.current) return;
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+    } else {
+      setTranscript("");
+      setIsRecording(true);
+      recognitionRef.current.start();
+    }
+  }
+
+  useEffect(() => {
+    async function loadData() {
+      try {
         const result = await getExpenses();
         const result_categories = await getCategories();
         setExpenses(result.data);
         setCategories(result_categories.data);
-      }catch(error){
+      } catch (error) {
         console.error(error);
       }
     }
@@ -47,8 +83,8 @@ function Dashboard() {
         (spendingByCategory[expense.category_id] || 0) + Number(expense.amount);
     }
   });
-  const categoryNames ={};
-  categories.forEach((c) => {categoryNames[c.id] = c.name;});
+  const categoryNames = {};
+  categories.forEach((c) => { categoryNames[c.id] = c.name; });
   const categorySpending = Object.entries(spendingByCategory).map(([id, amount]) => ({
     id,
     name: categoryNames[id] || "Unknown",
@@ -65,17 +101,22 @@ function Dashboard() {
         {/* LEFT: Capture Hub */}
         <div className="capture-hub card">
           <div className="capture-hub-top">
-            <button className="record-button" aria-label="Tap to record an expense">
+            <button 
+              className={`record-button ${isRecording ? "recording" : ""}`}
+              aria-label="Tap to record an expense" onClick={handleRecordClick}
+              onClick={handleRecordClick}
+              disabled={!isSpeechSupported}
+            >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" stroke="currentColor" strokeWidth="1.6"/>
-                <path d="M19 11a7 7 0 0 1-14 0M12 18v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M19 11a7 7 0 0 1-14 0M12 18v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
               </svg>
             </button>
             <p className="capture-label">Tap to Record</p>
           </div>
           <div className="capture-hub-bottom">
             <p className="transcript-placeholder">
-              Your spoken transcript will appear here once you start recording.
+              {transcript || "Your spoken transcript will appear here once you start recording."}
             </p>
           </div>
         </div>
@@ -99,7 +140,7 @@ function Dashboard() {
                       style={{ width: `${(category.amount / maxAmount) * 100}%` }}
                     ></div>
                   </div>
-                  <span className="category-amount">£{category.amount}</span>
+                  <span className="category-amount">£{category.amount.toFixed(2)}</span>
                 </div>
               ))}
             </div>

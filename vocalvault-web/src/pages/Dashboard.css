@@ -62,6 +62,13 @@
   outline-offset: 3px;
 }
 
+.record-button.recording{
+  background-color: var(--color-accent);
+  color: #FAF9F6;
+  border-color: var(--color-accent);
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
 .capture-label {
   margin-top: 16px;
   font-size: 14px;
@@ -173,6 +180,18 @@
 .category-amount{
     text-align: right;
     font-weight: 600;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(63, 107, 79, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(63, 107, 79, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(63, 107, 79, 0);
+  }
 }
 
 @media (max-width: 768px) {
