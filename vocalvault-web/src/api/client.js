@@ -65,6 +65,20 @@ export async function updateCategory(id, updates){
     return response.json();
 }
 
+export async function createCategory(category){
+    const response = await fetch ("http://localhost:3000/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json"},
+        body: JSON.stringify(category),
+    });
+
+    if(!response.ok){
+        throw new Error(`Failed to create category: ${response.status} `);
+    }
+
+    return response.json();
+}
+
 /*Send the parse msg to the backend*/
 export async function parseExpense(text){
     const response = await fetch("http://localhost:3000/api/expenses/parse", {
@@ -113,3 +127,4 @@ export async function updateSettings(updates) {
   }
   return response.json();
 }
+

@@ -1,12 +1,14 @@
 import "./Category.css";
 import { useState, useEffect } from "react";
-import { getCategories, getExpenses, deleteCategory, updateCategory } from "../api/client.js";
+import { getCategories, getExpenses, deleteCategory, updateCategory, createCategory } from "../api/client.js";
 
 function Category() {
   const [newKeywords, setNewKeywords] = useState({});
   const [categories, setCategories] = useState([]);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
   const [expenses, setExpenses] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     async function loadData(){
@@ -69,6 +71,19 @@ function Category() {
     setConfirmingDeleteId(null);
   }
 
+  async function handleCreateCategory(){
+    if (!newCategoryName.trim()) return;
+    
+    try{
+      const result = await createCategory({name: newCategoryName, keywords: []});
+      setCategories([...categories, result.data]);
+      setNewCategoryName("");
+      setShowAddForm(false);
+    }catch(error){
+      console.error(error);
+    }
+  }
+
   const expenseCount = {};
   expenses.forEach((expense) => {
     if (expense.category_id){
@@ -79,7 +94,21 @@ function Category() {
     <div className="category-page">
       <div className="page-header">
         <h1 className="page-title">Categories</h1>
-        <button className="add-button">+ Add Category</button>
+        {showAddForm ? (
+          <div className="add-category-form">
+            <input
+              type="text"
+              className="setting-input"
+              placeholder="Category Name"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+            />
+            <button className="save-button" onClick={handleCreateCategory}>Add</button>
+            <button className="text-button" onClick={() => setShowAddForm(false)}>Cancel</button>
+          </div>
+        ): (
+          <button className="add-button" onClick={() => setShowAddForm(true)}>+ Add Category</button>
+        )}
       </div>
 
       <div className="category-list">
