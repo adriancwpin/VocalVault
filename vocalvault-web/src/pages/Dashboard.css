@@ -91,6 +91,23 @@
   line-height: 1.5;
 }
 
+.draft-card {
+  width: 100%;
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.draft-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
 .ledger-column {
   display: flex;
   flex-direction: column;

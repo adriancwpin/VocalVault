@@ -79,3 +79,17 @@ export async function parseExpense(text){
     
     return response.json();
 }
+
+export async function createExpense(expenseData){
+    const response = await fetch("http://localhost:3000/api/expenses", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(expenseData),
+    });
+
+    if(!response.ok){
+        throw new Error(`Failed to create expense: ${response.status}`);
+    }
+
+    return response.json();
+}

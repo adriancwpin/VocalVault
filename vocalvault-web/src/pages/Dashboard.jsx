@@ -1,6 +1,6 @@
 import "./Dashboard.css";
 import { useState, useEffect, useRef } from "react";
-import { getExpenses, getCategories, parseExpense } from "../api/client.js";
+import { getExpenses, getCategories, parseExpense, createExpense } from "../api/client.js";
 
 function Dashboard() {
   const [expenses, setExpenses] = useState([]);
@@ -9,6 +9,12 @@ function Dashboard() {
   const [isRecording, setIsRecording] = useState(false);
   const isSpeechSupported = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   const [parsed, setParsed] = useState(null);
+
+  //editable draft field
+  const [draftAmount, setDraftAmount] = useState("");
+  const [draftDescription, setDraftDescription] = useState("");
+  const [draftCategory, setDraftCategory] = useState("");
+
   const recognitionRef = useRef(null);
 
   useEffect(() => {
@@ -55,15 +61,6 @@ function Dashboard() {
     }
   }
 
-  async function handleParse(text){
-    try{
-      const result = await parseExpense(text);
-      setParsed(result.data);
-    }catch(error){
-      console.error(error);
-    }
-  }
-
   useEffect(() => {
     async function loadData() {
       try {
@@ -78,6 +75,47 @@ function Dashboard() {
     loadData();
   }, []);
 
+  async function handleParse(text){
+    try{
+      const result = await parseExpense(text);
+      setParsed(result.data);
+      if (result.data) {
+        setDraftAmount(result.data.amount !== null && result.data.amount !== undefined ? String(result.data.amount) : "");
+        setDraftDescription(result.data.description ?? "");
+        setDraftCategory(result.data.categoryId ?? "");
+      }
+    }catch(error){
+      console.error(error);
+    }
+  }
+
+  async function handleConfirmSave() {
+    try {
+      await createExpense({
+        amount: Number(draftAmount),
+        category_id: draftCategory || null,
+        description: draftDescription,
+        rawText: transcript,
+        source: "voice"
+      });
+      handleCancelDraft();
+      
+      // Refresh list
+      const result = await getExpenses();
+      const result_categories = await getCategories();
+      setExpenses(result.data);
+      setCategories(result_categories.data);
+    } catch (error) {
+      console.error("Failed to save draft expense:", error);
+    }
+  }
+
+  function handleCancelDraft() {
+    setParsed(null);
+    setDraftAmount("");
+    setDraftDescription("");
+    setDraftCategory("");
+  }
   const monthlyBudget = 1000;   // stays hardcoded until Settings is wired to the backend
   const totalSpent = expenses.reduce(
     (sum, expense) => sum + Number(expense.amount),
@@ -127,7 +165,45 @@ function Dashboard() {
             <p className="transcript-placeholder">
               {transcript || "Your spoken transcript will appear here once you start recording."}
             </p>
-             {parsed && <pre>{JSON.stringify(parsed, null, 2)}</pre>}
+              {parsed && (
+                <div className= "draft-card">
+                  <h3 className="ledger-title">Confirm expense</h3>
+                  <label className="setting-label">Amount (£)</label>
+                  <input 
+                    type="number"
+                    className="setting-input"
+                    value={draftAmount}
+                    onChange={(e) => setDraftAmount(Number(e.target.value))}
+                  />
+
+                  <label className="setting-label">Description</label>
+                  <input 
+                    type="text"
+                    className="setting-input"
+                    value={draftDescription}
+                    onChange={(e) => setDraftDescription(e.target.value)}
+                  />
+
+                  <label className="setting-label">Category</label>
+                  <select 
+                    className="setting-input"
+                    value={draftCategory || ""}
+                    onChange={(e) => setDraftCategory(e.target.value)}
+                  >
+                    <option value="">Uncategorized</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+
+                  <div className="draft-actions">
+                    <button className="save-button" onClick={handleConfirmSave}>Confirm</button>
+                    <button className="text-button" onClick={handleCancelDraft}>Cancel</button>
+                  </div>
+                </div>
+
+              )
+             }
 
              {/* TEMPORARY — remove once mic testing works */}
             <input
