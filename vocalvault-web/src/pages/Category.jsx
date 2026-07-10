@@ -9,6 +9,8 @@ function Category() {
   const [expenses, setExpenses] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
 
   useEffect(() => {
     async function loadData(){
@@ -84,6 +86,33 @@ function Category() {
     }
   }
 
+  function handleEditClick(category) {
+    setEditingCategory(category);
+    setEditCategoryName(category.name);
+  }
+
+  async function handleSaveEdit() {
+    if (!editCategoryName.trim()) return;
+
+    try {
+      await updateCategory(editingCategory.id, { name: editCategoryName });
+      setCategories(
+        categories.map((c) =>
+          c.id === editingCategory.id ? { ...c, name: editCategoryName } : c
+        )
+      );
+      setEditingCategory(null);
+      setEditCategoryName("");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function handleCancelEdit() {
+    setEditingCategory(null);
+    setEditCategoryName("");
+  }
+
   const expenseCount = {};
   expenses.forEach((expense) => {
     if (expense.category_id){
@@ -126,7 +155,7 @@ function Category() {
               />
               <button className="add-keyword-button" onClick={() => handleAddKeyword(category.id)}>Add</button>
               <div className="row-actions">
-                <button className="text-button">Edit</button>
+                <button className="text-button" onClick={() => handleEditClick(category)}>Edit</button>
                 {confirmingDeleteId === category.id ?(
                   <span className="confirm-delete-row">
                     Delete this category and its {expenseCount[category.id] || 0} expenses?
@@ -156,6 +185,29 @@ function Category() {
           </div>
         ))}
       </div>
+
+      {editingCategory && (
+        <div className="modal-overlay" onClick={handleCancelEdit}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Edit Category</h3>
+            <div className="modal-body">
+              <label className="setting-label">Category Name</label>
+              <input
+                type="text"
+                className="setting-input modal-input"
+                value={editCategoryName}
+                onChange={(e) => setEditCategoryName(e.target.value)}
+                placeholder="Category Name"
+                autoFocus
+              />
+            </div>
+            <div className="modal-actions">
+              <button className="save-button" onClick={handleSaveEdit}>Save</button>
+              <button className="text-button" onClick={handleCancelEdit}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
