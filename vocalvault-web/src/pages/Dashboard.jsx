@@ -1,6 +1,6 @@
 import "./Dashboard.css";
 import { useState, useEffect, useRef } from "react";
-import { getExpenses, getCategories, parseExpense, createExpense } from "../api/client.js";
+import { getExpenses, getCategories, parseExpense, createExpense, getSettings } from "../api/client.js";
 
 function Dashboard() {
   const [expenses, setExpenses] = useState([]);
@@ -14,6 +14,8 @@ function Dashboard() {
   const [draftAmount, setDraftAmount] = useState("");
   const [draftDescription, setDraftDescription] = useState("");
   const [draftCategory, setDraftCategory] = useState("");
+
+  const [monthlyBudget, setMonthlyBudget] = useState(1000);
 
   const recognitionRef = useRef(null);
 
@@ -66,8 +68,10 @@ function Dashboard() {
       try {
         const result = await getExpenses();
         const result_categories = await getCategories();
+        const result_settings = await getSettings();
         setExpenses(result.data);
         setCategories(result_categories.data);
+        setMonthlyBudget(Number(result_settings.data.monthly_budget));
       } catch (error) {
         console.error(error);
       }
@@ -116,7 +120,8 @@ function Dashboard() {
     setDraftDescription("");
     setDraftCategory("");
   }
-  const monthlyBudget = 1000;   // stays hardcoded until Settings is wired to the backend
+
+
   const totalSpent = expenses.reduce(
     (sum, expense) => sum + Number(expense.amount),
     0

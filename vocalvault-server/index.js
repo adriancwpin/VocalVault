@@ -8,6 +8,7 @@ import express from 'express';
 import cors from 'cors'; //allows the frontend to talk to the backend without browser blocking it
 import expensesRouter from './src/routes/expense.route.js';
 import categoryRouter from './src/routes/category.route.js';
+import settingRouter from './src/routes/settings.route.js';
 
 const app = express(); //creates server application
 const PORT = process.env.PORT || 3000;
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use('/api/expenses', expensesRouter);
 app.use('/api/categories', categoryRouter);
+app.use('/api/settings', settingRouter);
 
 app.get('/api/health', (req,res) => {
     res.json({status: 'ok'});

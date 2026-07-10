@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSettings, updateSettings } from "../api/client.js";
 import "./Setting.css";
 
 function Setting() {
@@ -6,6 +7,31 @@ function Setting() {
   const [defaultCategory, setDefaultCategory] = useState("none");
 
   const categories = ["Food/Drink", "Transport", "Shopping", "Bills", "Entertainment"];
+
+  useEffect(() => {
+    async function loadSettings(){
+      try{
+        const result = await getSettings();
+        setMonthlyBudget(Number(result.data.monthly_budget));
+        setDefaultCategory(result.data.default_category_id || "none");
+      }catch (error){
+        console.error(error);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  async function handleSave(){
+    try{
+      await updateSettings({
+        monthly_budget: monthlyBudget,
+        default_category_id: defaultCategory === "none" ? null : defaultCategory,
+      });
+      alert("Setting saved!");
+    }catch (error){{
+      console.error(error);
+    }}
+  }
 
   return (
     <div className="setting-page">
@@ -45,7 +71,7 @@ function Setting() {
           <p className="setting-hint">Applied when a voice entry doesn't match any category keywords.</p>
         </div>
 
-        <button className="save-button">Save</button>
+        <button className="save-button" onClick={handleSave}>Save</button>
       </div>
     </div>
   );

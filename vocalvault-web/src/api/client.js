@@ -93,3 +93,23 @@ export async function createExpense(expenseData){
 
     return response.json();
 }
+
+export async function getSettings() {
+  const response = await fetch("http://localhost:3000/api/settings");
+  if (!response.ok) {
+    throw new Error(`Failed to fetch settings: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function updateSettings(updates) {
+  const response = await fetch("http://localhost:3000/api/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to update settings: ${response.status}`);
+  }
+  return response.json();
+}
