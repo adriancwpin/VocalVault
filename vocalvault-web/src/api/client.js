@@ -64,3 +64,18 @@ export async function updateCategory(id, updates){
 
     return response.json();
 }
+
+/*Send the parse msg to the backend*/
+export async function parseExpense(text){
+    const response = await fetch("http://localhost:3000/api/expenses/parse", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text}),
+    });
+
+    if(!response.ok){
+        throw new Error(`Failed to parse expense: ${response.status}`);
+    }
+    
+    return response.json();
+}

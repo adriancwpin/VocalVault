@@ -1,13 +1,14 @@
 import "./Dashboard.css";
 import { useState, useEffect, useRef } from "react";
-import { getExpenses, getCategories } from "../api/client.js";
+import { getExpenses, getCategories, parseExpense } from "../api/client.js";
 
 function Dashboard() {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [transcript, setTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [isSpeechSupported, setIsSpeechSupported] = useState(true);
+  const isSpeechSupported = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  const [parsed, setParsed] = useState(null);
   const recognitionRef = useRef(null);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ function Dashboard() {
       recognition.onresult = (event) => {
         const text = event.results[0][0].transcript;
         setTranscript(text);
+        handleParse(text);
       };
 
       recognition.onend = () => {
@@ -33,8 +35,6 @@ function Dashboard() {
       };
 
       recognitionRef.current = recognition;
-    }else{
-      setIsSpeechSupported(false);
     }
   }, []);
 
@@ -52,6 +52,15 @@ function Dashboard() {
       setTranscript("");
       setIsRecording(true);
       recognitionRef.current.start();
+    }
+  }
+
+  async function handleParse(text){
+    try{
+      const result = await parseExpense(text);
+      setParsed(result.data);
+    }catch(error){
+      console.error(error);
     }
   }
 
@@ -103,7 +112,7 @@ function Dashboard() {
           <div className="capture-hub-top">
             <button 
               className={`record-button ${isRecording ? "recording" : ""}`}
-              aria-label="Tap to record an expense" onClick={handleRecordClick}
+              aria-label="Tap to record an expense" 
               onClick={handleRecordClick}
               disabled={!isSpeechSupported}
             >
@@ -118,6 +127,19 @@ function Dashboard() {
             <p className="transcript-placeholder">
               {transcript || "Your spoken transcript will appear here once you start recording."}
             </p>
+             {parsed && <pre>{JSON.stringify(parsed, null, 2)}</pre>}
+
+             {/* TEMPORARY — remove once mic testing works */}
+            <input
+              type="text"
+              placeholder="Type a test transcript..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setTranscript(e.target.value);
+                  handleParse(e.target.value);
+                }
+              }}
+            />
           </div>
         </div>
 
