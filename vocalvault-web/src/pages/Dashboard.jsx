@@ -47,7 +47,7 @@ function Dashboard() {
   }, []);
 
   function handleRecordClick() {
-    if(!isSpeechSupported){
+    if (!isSpeechSupported) {
       alert("Speech recognition is not supported in this browser. Please try Chrome or Safari.");
       return;
     }
@@ -79,31 +79,37 @@ function Dashboard() {
     loadData();
   }, []);
 
-  async function handleParse(text){
-    try{
+  async function handleParse(text) {
+    try {
       const result = await parseExpense(text);
       setParsed(result.data);
       if (result.data) {
         setDraftAmount(result.data.amount !== null && result.data.amount !== undefined ? String(result.data.amount) : "");
         setDraftDescription(result.data.description ?? "");
         setDraftCategory(result.data.categoryId ?? "");
-      }
-    }catch(error){
+      } 
+    } catch (error) {
       console.error(error);
     }
   }
 
   async function handleConfirmSave() {
+    const amt = Number(draftAmount);
+    if (isNaN(amt) || amt <= 0) {
+      alert("Please enter a valid amount greater than 0.");
+      return;
+    }
+
     try {
       await createExpense({
-        amount: Number(draftAmount),
-        category_id: draftCategory || null,
+        amount: amt,
+        category_id: draftCategory ? Number(draftCategory) : null,
         description: draftDescription,
         rawText: transcript,
         source: "voice"
       });
       handleCancelDraft();
-      
+
       // Refresh list
       const result = await getExpenses();
       const result_categories = await getCategories();
@@ -153,9 +159,9 @@ function Dashboard() {
         {/* LEFT: Capture Hub */}
         <div className="capture-hub card">
           <div className="capture-hub-top">
-            <button 
+            <button
               className={`record-button ${isRecording ? "recording" : ""}`}
-              aria-label="Tap to record an expense" 
+              aria-label="Tap to record an expense"
               onClick={handleRecordClick}
               disabled={!isSpeechSupported}
             >
@@ -170,47 +176,47 @@ function Dashboard() {
             <p className="transcript-placeholder">
               {transcript || "Your spoken transcript will appear here once you start recording."}
             </p>
-              {parsed && (
-                <div className= "draft-card">
-                  <h3 className="ledger-title">Confirm expense</h3>
-                  <label className="setting-label">Amount (£)</label>
-                  <input 
-                    type="number"
-                    className="setting-input"
-                    value={draftAmount}
-                    onChange={(e) => setDraftAmount(Number(e.target.value))}
-                  />
+            {parsed && (
+              <div className="draft-card">
+                <h3 className="ledger-title">Confirm expense</h3>
+                <label className="setting-label">Amount (£)</label>
+                <input
+                  type="number"
+                  className="setting-input"
+                  value={draftAmount}
+                  onChange={(e) => setDraftAmount(e.target.value)}
+                />
 
-                  <label className="setting-label">Description</label>
-                  <input 
-                    type="text"
-                    className="setting-input"
-                    value={draftDescription}
-                    onChange={(e) => setDraftDescription(e.target.value)}
-                  />
+                <label className="setting-label">Description</label>
+                <input
+                  type="text"
+                  className="setting-input"
+                  value={draftDescription}
+                  onChange={(e) => setDraftDescription(e.target.value)}
+                />
 
-                  <label className="setting-label">Category</label>
-                  <select 
-                    className="setting-input"
-                    value={draftCategory || ""}
-                    onChange={(e) => setDraftCategory(e.target.value)}
-                  >
-                    <option value="">Uncategorized</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                <label className="setting-label">Category</label>
+                <select
+                  className="setting-input"
+                  value={draftCategory || ""}
+                  onChange={(e) => setDraftCategory(e.target.value)}
+                >
+                  <option value="">Uncategorized</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
 
-                  <div className="draft-actions">
-                    <button className="save-button" onClick={handleConfirmSave}>Confirm</button>
-                    <button className="text-button" onClick={handleCancelDraft}>Cancel</button>
-                  </div>
+                <div className="draft-actions">
+                  <button className="save-button" onClick={handleConfirmSave}>Confirm</button>
+                  <button className="text-button" onClick={handleCancelDraft}>Cancel</button>
                 </div>
+              </div>
 
-              )
-             }
+            )
+            }
 
-             {/* TEMPORARY — remove once mic testing works */}
+            {/* TEMPORARY — remove once mic testing works */}
             <input
               type="text"
               placeholder="Type a test transcript..."
