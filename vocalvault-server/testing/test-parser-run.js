@@ -1,6 +1,4 @@
-import 'dotenv/config'; //because there is access to our category db
 import wordToNumbers from 'word-to-numbers';
-import { getAllCategories } from '../models/category.model.js';
 
 const DOT_DECIMAL_PATTERN = /£?\s*(\d+)\.(\d{1,2})\b/;
 const POINT_DECIMAL_PATTERN = /£?\s*(\d+)\s*point\s*(\d{1,2})\b/i;
@@ -41,7 +39,7 @@ function parseLeftover(text) {
     } else if (WORD_WHOLE_PATTERN.test(text)) {
         leftover = text.replace(WORD_WHOLE_PATTERN, '');
     }
-
+    
     const fillerWords = ['spent', 'on', 'for', 'paid', 'bought'];
     for (const word of fillerWords) {
         const pattern = new RegExp(`\\b${word}\\b`, 'gi');
@@ -50,23 +48,6 @@ function parseLeftover(text) {
 
     leftover = leftover.replace(/\s+/g, ' ').trim();
     return leftover;
-}
-
-function categoryMatching(leftoverText, categories) {
-    //split the leftover text into individual words
-    const text = leftoverText.toLowerCase().split(/\s+/);
-    //loop through the categories 
-    for (const category of categories) {
-        for (const word of text) {
-            if (Array.isArray(category.keywords) && category.keywords.includes(word)) {
-                return category;
-            }
-        }
-    }
-    return null;
-    //see which word fall into which category
-    //return the matching category (else null)
-    //
 }
 
 function countAmountMatches(text) {
@@ -96,31 +77,23 @@ function countAmountMatches(text) {
     return count;
 }
 
-async function parseExpense(text) {
+function test(text) {
     let normalized = String(wordToNumbers(text));
     normalized = normalized.replace(/\b(lbs?)\b/gi, 'pounds');
-    
-    // Check for multiple expenses
     const matchesCount = countAmountMatches(normalized);
     const warning = matchesCount > 1 ? "Sounds like multiple expenses, please record one at a time." : null;
-
     const amount = parseAmount(normalized);
     const description = parseLeftover(normalized);
-    //category matching 
-    const categories = await getAllCategories();
-    const matchedCategory = categoryMatching(description, categories);
-    const categoryId = matchedCategory ? matchedCategory.id : null;
-    const categoryName = matchedCategory ? matchedCategory.name : null;
-
-    return {
-        amount,
-        description,
-        categoryId,
-        categoryName,
-        warning,
-        rawText: text
-    };
+    console.log(`Input: "${text}"`);
+    console.log(`Normalized: "${normalized}"`);
+    console.log(`Amount: ${amount}`);
+    console.log(`Description: "${description}"`);
+    console.log(`Warning: "${warning}"`);
+    console.log('---');
 }
 
-export { parseExpense };
-
+test("50 lb in food");
+test("£50 note");
+test("spent 10.50 on lunch");
+test("spent 10 pounds on coffee and 5 pounds on lunch");
+test("spent £10 on coffee and £5 on tea");

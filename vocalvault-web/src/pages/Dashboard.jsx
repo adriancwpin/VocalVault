@@ -9,6 +9,8 @@ function Dashboard() {
   const [isRecording, setIsRecording] = useState(false);
   const isSpeechSupported = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   const [parsed, setParsed] = useState(null);
+  const [warning, setWarning] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   //editable draft field
   const [draftAmount, setDraftAmount] = useState("");
@@ -58,6 +60,7 @@ function Dashboard() {
       recognitionRef.current.stop();
     } else {
       setTranscript("");
+      setWarning("");
       setIsRecording(true);
       recognitionRef.current.start();
     }
@@ -66,6 +69,7 @@ function Dashboard() {
   useEffect(() => {
     async function loadData() {
       try {
+        setIsLoading(true);
         const result = await getExpenses();
         const result_categories = await getCategories();
         const result_settings = await getSettings();
@@ -74,6 +78,8 @@ function Dashboard() {
         setMonthlyBudget(Number(result_settings.data.monthly_budget));
       } catch (error) {
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadData();
@@ -82,12 +88,18 @@ function Dashboard() {
   async function handleParse(text) {
     try {
       const result = await parseExpense(text);
-      setParsed(result.data);
-      if (result.data) {
-        setDraftAmount(result.data.amount !== null && result.data.amount !== undefined ? String(result.data.amount) : "");
-        setDraftDescription(result.data.description ?? "");
-        setDraftCategory(result.data.categoryId ?? "");
-      } 
+      if (result.data && result.data.warning) {
+        setWarning(result.data.warning);
+        setParsed(null);
+      } else {
+        setWarning("");
+        setParsed(result.data);
+        if (result.data) {
+          setDraftAmount(result.data.amount !== null && result.data.amount !== undefined ? String(result.data.amount) : "");
+          setDraftDescription(result.data.description ?? "");
+          setDraftCategory(result.data.categoryId ?? "");
+        }
+      }
     } catch (error) {
       console.error(error);
     }
@@ -122,6 +134,8 @@ function Dashboard() {
 
   function handleCancelDraft() {
     setParsed(null);
+    setTranscript("");
+    setWarning("");
     setDraftAmount("");
     setDraftDescription("");
     setDraftCategory("");
@@ -150,6 +164,14 @@ function Dashboard() {
   }));
   const maxAmount = Math.max(...categorySpending.map((c) => c.amount), 1);
 
+  if (isLoading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading your VocalVault...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
@@ -173,10 +195,17 @@ function Dashboard() {
             <p className="capture-label">Tap to Record</p>
           </div>
           <div className="capture-hub-bottom">
-            <p className="transcript-placeholder">
-              {transcript || "Your spoken transcript will appear here once you start recording."}
-            </p>
-            {parsed && (
+            {warning ? (
+              <div className="warning-banner">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <p className="warning-text">{warning}</p>
+                <button className="text-button" onClick={handleCancelDraft}>Dismiss</button>
+              </div>
+            ) : parsed ? (
               <div className="draft-card">
                 <h3 className="ledger-title">Confirm expense</h3>
                 <label className="setting-label">Amount (£)</label>
@@ -212,21 +241,11 @@ function Dashboard() {
                   <button className="text-button" onClick={handleCancelDraft}>Cancel</button>
                 </div>
               </div>
-
-            )
-            }
-
-            {/* TEMPORARY — remove once mic testing works */}
-            <input
-              type="text"
-              placeholder="Type a test transcript..."
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  setTranscript(e.target.value);
-                  handleParse(e.target.value);
-                }
-              }}
-            />
+            ) : (
+              <p className="transcript-placeholder">
+                {transcript || "Your spoken transcript will appear here once you start recording."}
+              </p>
+            )}
           </div>
         </div>
 
@@ -240,35 +259,47 @@ function Dashboard() {
           <div className="category-spending card">
             <h2 className="ledger-title">Spending by Category</h2>
             <div className="category-table">
-              {categorySpending.map((category) => (
-                <div key={category.id} className="category-row">
-                  <span className="category-name">{category.name}</span>
-                  <div className="bar-track">
-                    <div
-                      className="bar-fill"
-                      style={{ width: `${(category.amount / maxAmount) * 100}%` }}
-                    ></div>
-                  </div>
-                  <span className="category-amount">£{category.amount.toFixed(2)}</span>
+              {categorySpending.length === 0 ? (
+                <div className="empty-state">
+                  <p>No category spending recorded yet.</p>
                 </div>
-              ))}
+              ) : (
+                categorySpending.map((category) => (
+                  <div key={category.id} className="category-row">
+                    <span className="category-name">{category.name}</span>
+                    <div className="bar-track">
+                      <div
+                        className="bar-fill"
+                        style={{ width: `${(category.amount / maxAmount) * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className="category-amount">£{category.amount.toFixed(2)}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
           <div className="expense-ledger card">
             <h2 className="ledger-title">Recent Expenses</h2>
-            <table className="expense-table">
-              <tbody>
-                {recentExpenses.map((expense) => (
-                  <tr key={expense.id} className="expense-row">
-                    <td className="expense-name">
-                      {expense.description}
-                      <span className="expense-category"> • {categoryNames[expense.category_id] || "Uncategorized"}</span>
-                    </td>
-                    <td className="expense-amount">£{Number(expense.amount).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {recentExpenses.length === 0 ? (
+              <div className="empty-state">
+                <p>No recent expenses. Tap the microphone to record one!</p>
+              </div>
+            ) : (
+              <table className="expense-table">
+                <tbody>
+                  {recentExpenses.map((expense) => (
+                    <tr key={expense.id} className="expense-row">
+                      <td className="expense-name">
+                        {expense.description}
+                        <span className="expense-category"> • {categoryNames[expense.category_id] || "Uncategorized"}</span>
+                      </td>
+                      <td className="expense-amount">£{Number(expense.amount).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>
